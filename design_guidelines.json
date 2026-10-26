@@ -1,0 +1,122 @@
+{
+  "app_name": "CalendarApp",
+  "personality": "1 iOS-Native Clean",
+  "personality_one_liner": "A highly readable, serene calendar focusing on typography and clear temporal wayfinding without visual noise.",
+  "color": {
+    "surface": "#F9F9F8",
+    "onSurface": "#1C1C1A",
+    "surfaceSecondary": "#FFFFFF",
+    "onSurfaceSecondary": "#1C1C1A",
+    "surfaceTertiary": "#E8E8E6",
+    "onSurfaceTertiary": "#4A4A46",
+    "surfaceInverse": "#262624",
+    "onSurfaceInverse": "#F9F9F8",
+    "brand": "#C26D5C",
+    "brandPrimary": "#C26D5C",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#D89285",
+    "onBrandSecondary": "#1C1C1A",
+    "brandTertiary": "#F2D8D3",
+    "onBrandTertiary": "#8F483A",
+    "success": "#7D977A",
+    "onSuccess": "#FFFFFF",
+    "warning": "#D9A05B",
+    "onWarning": "#FFFFFF",
+    "error": "#B35A5A",
+    "onError": "#FFFFFF",
+    "info": "#7D977A",
+    "onInfo": "#FFFFFF",
+    "border": "#E0E0DF",
+    "borderStrong": "#B8B8B5",
+    "divider": "#EAEAEA",
+    "muted": "#82827F",
+    "onBrand": "#FFFFFF"
+  },
+  "typography": {
+    "displayFontFamily": "Geist",
+    "textFontFamily": "Space Grotesk",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Maintain comfortable padding (lg/xl) around the calendar grid. Keep tap targets large minimum 44x44pt.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": 1,
+  "navigation": "stack_only",
+  "icon_set": "Phosphor",
+  "glassmorphism": {
+    "enabled": true,
+    "do's": [
+      "Use glassmorphism for the bottom sheet header/drag handle area if it floats above content.",
+      "Apply glass effect to sticky navigation headers."
+    ],
+    "dont's": [
+      "Do not use glassmorphism on the calendar grid cells or list items."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Calendar Month View",
+      "purpose": "Provide a high-level view of the month's events and deep-dive into specific days via a bottom sheet.",
+      "states": {
+        "loading": "Full screen centered spinner during initial API fetch. Use local state updates when navigating months to mask subsequent loads.",
+        "empty": "A clean grid with no event dots. If a day with no events is tapped, the bottom sheet displays a friendly empty state illustration and text.",
+        "error": "Full screen error layout with a clear message and a 'Retry' button in brandPrimary."
+      },
+      "layout": "Header at the top displaying current Month and Year (display typography, xl size). Top right: small chevron left and right arrows for month navigation. Below header: 7-column grid for days of the week (Sun-Sat) in muted text. Below that: the calendar grid. Each day is a minimum 44x44pt touchable area. If a day has events, render a tiny 4x4pt brandPrimary dot horizontally centered below the date number. Today's date is highlighted with a brandPrimary circular background and onBrand text. When a day is tapped, trigger a Bottom Sheet that covers the lower 50% of the screen. The sheet header displays the selected date. The sheet content is a scrollable vertical list of event cards (surfaceSecondary background, subtle border, rounded md). Each event card displays title, start time, type badge (using surfaceTertiary), and metadata lines (venue, attendees) in muted text. If the day has no events, the sheet displays the empty desk image with 'No events planned today'."
+    }
+  ],
+  "images": {
+    "empty_state_desk": {
+      "url": "https://images.unsplash.com/photo-1572216250247-41cd338c3877?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzl8MHwxfHNlYXJjaHwxfHxlbXB0eSUyMGRlc2slMjBvcmdhbml6ZXIlMjBjbGVhbiUyMHdoaXRlJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3OTI5ODc4ODl8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Clean empty white desk organizer with keyboard"
+    }
+  },
+  "haptics": {
+    "events": {
+      "tap_day": "light",
+      "change_month": "selection",
+      "open_sheet": "medium",
+      "close_sheet": "light"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Ensure touch targets for calendar days are at least 44x44pt. Use hitSlop if visual elements are smaller.",
+    "Do NOT use any shades of blue, purple, or indigo. Stick strictly to the defined warm sand and terracotta color palette.",
+    "Implement gesture-based swipe navigation on the calendar grid to switch months (swipe left/right) alongside the header arrows.",
+    "Use @gorhom/bottom-sheet for the day details menu. It should slide up smoothly and display event rows cleanly.",
+    "Use Space Grotesk for the calendar numbers to provide a monospaced, structural look, and Geist for standard UI text.",
+    "If a day is tapped that has no events, display the `empty_state_desk` image inside the bottom sheet with a calming message.",
+    "Ensure the API request dynamically injects the correct year and month based on the currently viewed month."
+  ]
+}

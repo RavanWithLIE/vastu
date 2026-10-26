@@ -1,0 +1,33 @@
+{
+  "summary": "Tested the backend proxy GET /api/calendar-events, which pulls from a MOCKED external API (local http.server on :8099). Ran 8 pytest cases, all passed: the Oct 2026 proxy returns the expected JSON, bad input returns 422, and another month returns 200. Ran Playwright on Expo web at 390x844 and 375x667. These work: October 2026 title, dots on 10-02 and 10-05, the day sheet with correct rows (time, title, type badge, metadata), closing via the close button and the backdrop, tapping a day with no events opens no sheet, prev/next refetch (seen in network requests), the Today button shows and hides correctly, and a touch swipe left moves to the next month. Found 2 UI issues: the 'September' title breaks mid-word at 375px, and the events summary counts events from other months. No deprecated Expo packages found (no expo-av or expo-barcode-scanner).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Header month title", "issue": "At 375px width, when the Today button is shown, 'September' wraps mid-word into 'Septembe' / 'r' (32px font, flex:1 next to Today plus 2 nav buttons). Reference: /app/frontend/app/index.tsx:67-69, 150", "testID": "calendar-month-title", "priority": "MEDIUM"},
+      {"component": "Events summary", "issue": "The summary shows data.totalEvents from the API instead of counting events in the viewed month. With the mock, November shows '3 events this month · tap a dotted day' but has 0 dots. If the real API ever returns keys or a total outside the requested month, the text will be misleading. Count from days whose key starts with YYYY-MM of the viewed month instead. Reference: /app/frontend/app/index.tsx:128-130", "testID": "events-summary", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Calendar", "issues": ["today-button is 64x36 with no hitSlop, below the 44pt minimum touch target (index.tsx:162)", "events-retry-button height is 36, below 44 (index.tsx:191)"]},
+      {"screen": "DaySheet", "issues": ["With Modal animationType='slide' the dim backdrop slides up together with the sheet instead of fading in. Cosmetic only."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_calendar_events.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Fix the month title wrapping: use numberOfLines={1} and adjustsFontSizeToFit (or a smaller font, or minWidth:0 with a shorter layout) so 'September' never breaks mid-word at 375px",
+    "Compute the events-summary count from the events whose date keys fall in the viewed year/month, not from data.totalEvents",
+    "Raise today-button and events-retry-button to a 44pt minimum height, or add hitSlop"
+  ],
+  "critical_code_review_comments": [
+    "Backend: logger is defined after the route function is declared. This works at runtime but would be cleaner moved to the top.",
+    "Frontend uses process.env.EXPO_PUBLIC_BACKEND_URL. This is correct for this project's .env.",
+    "Backend returns 424 for upstream failures, which is acceptable. The frontend shows the 'detail' message."
+  ],
+  "updated_files": ["/app/backend/tests/test_calendar_events.py"],
+  "success_rate": {"backend": "100%", "frontend": "90% (all flows work; title wrap and summary count are UI issues)"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "MOCKED upstream: EVENTS_API_URL_TEMPLATE points to localhost:8099/ev.json, which returns the Oct 2026 sample for every month. System date is Oct 26 2026. Swipe can be tested on web by dispatching TouchEvents (mouse drag does not trigger PanResponder inside the ScrollView). Run the tests with EXPO_PUBLIC_BACKEND_URL exported from frontend/.env."
+}
