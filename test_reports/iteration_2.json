@@ -1,0 +1,32 @@
+{
+  "summary": "Frontend-only test of the Share Event Card feature against the real events API, at a 375x667 viewport. The browser clock reads Oct 26 2026, so the app opens on October 2026. Real API: GET /api/calendar-events?year=2026&month=10 returns 4 events, and the grid shows dots on 10-02, 10-05 and 10-22. Day 10-05 opens the sheet with Faculty Meeting (4:30 AM) and Computer Science Exam (8:30 AM), and both event-share-button-0 and event-share-button-1 render. Web clipboard fallback (navigator.share undefined in headless Chromium): share-notice shows 'Event details copied. Paste them into WhatsApp or email.' and is gone after 3.5s. Clipboard text for event 0: '📅 Faculty Meeting / Meeting / Monday, October 5, 2026, 4:30 AM – 6:00 AM / Venue: Conference Room / Attendees: 25'. Event 1 is also correct. Error path (writeText rejected) shows 'Couldn't open sharing. Please try again.' and the button can be used again. With a mocked navigator.share, the call gets the {title, text} payload and no notice appears. The sheet still works after sharing: share again, close button and backdrop all work. Regression: next/prev arrows, Today button (shown only off the current month, returns to Oct 2026) and non-event day (10-07, no sheet) all pass. No page errors or red screen. Native image capture (view-shot plus expo-sharing) was not tested; it needs a device. Deprecated packages detected: none (no expo-av, expo-barcode-scanner or expo-background-fetch).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "useShareEvent / share-notice", "issue": "If the user cancels the web share sheet (navigator.share rejects with AbortError), the app shows the error notice 'Couldn't open sharing. Please try again.' A cancel is not an error. Reproduced by mocking navigator.share. Reference: /app/frontend/src/calendar/ShareCard.tsx:91", "testID": "share-notice", "priority": "MEDIUM"},
+      {"component": "DaySheet notice state", "issue": "The notice state lives in the hook and is not cleared when the sheet closes. If the user closes the sheet within 3s of sharing and reopens it (same day or another day), the old notice is still showing. Reproduced. Reference: /app/frontend/src/calendar/DaySheet.tsx:29,99", "testID": "share-notice", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "DaySheet", "issues": ["Share buttons are 36px tall and the close button is 36x36. On native, hitSlop (6 and 8) brings them to 44px or more. On web, hitSlop has no effect, so the targets stay under 44px."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_calendar_events.py"],
+  "action_items": [
+    "ShareCard.tsx catch block: ignore AbortError on web (e.name === 'AbortError') so a user cancel does not show the error notice.",
+    "Clear the notice (and any pending share) when the DaySheet closes or dateKey changes, e.g. reset in a useEffect on dateKey, or move the hook into a component that unmounts.",
+    "Optional: on native, if the Modal closes during the 150ms paint delay, captureRef fails because the off-screen card is unmounted, and the user sees the error notice. Consider guarding this."
+  ],
+  "critical_code_review_comments": [
+    "The web path only uses the clipboard when navigator.share is missing. Mobile browsers have navigator.share, so they go through RN-web Share.share instead. This is correct, but a cancel there also lands in the catch and shows the error (see ui_bugs).",
+    "sharingEvent === ev compares by reference. This is fine because events come from the same query data object, but it breaks if the data is refetched while a share is running. Comparing eventId would be safer."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend only; real API spot-checked via curl OK)", "frontend": "95% (all requested flows pass; 2 minor UX bugs)"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "The browser clock in Playwright reads Oct 26 2026, so the app opens on October 2026; do not click next 9 times. Wait about 1.5s after opening the sheet (slide animation) before clicking share buttons. Grant clipboard-read and clipboard-write to the origin. navigator.share is undefined in headless Chromium.",
+  "rca_of_issue": "Cancel shows an error because useShareEvent's catch {} treats every rejection as a failure, including AbortError from navigator.share. The stale notice happens because DaySheet stays mounted while the Modal is hidden, so the notice state survives until its 3s timeout."
+}

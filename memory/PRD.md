@@ -21,6 +21,7 @@ Calendar app: on open shows the current month; fetches extra details for that ye
 
 - Connected real API: https://p7y66xn5lh.execute-api.ap-south-1.amazonaws.com/prod/events?year={year}&month={month}
 - Times (UTC from API) shown in device local time with start + end; typeName badge; description shown
+- Share Event Card: native captures a styled card image (react-native-view-shot) and opens share sheet (expo-sharing); web uses navigator.share or copies text to clipboard
 
 ## Backlog
 - P2: Type-based filters, add-to-device-calendar, offline cache of last month

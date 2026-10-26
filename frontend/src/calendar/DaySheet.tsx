@@ -1,9 +1,11 @@
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { useEffect } from "react";
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@react-native-vector-icons/ionicons";
 
 import { makeStyles, useTheme } from "@/src/theme";
 import { CalendarEvent, formatTime, humanize } from "./api";
+import { ShareCard, useShareEvent } from "./ShareCard";
 
 type Props = {
   dateKey: string | null;
@@ -25,10 +27,19 @@ export function DaySheet({ dateKey, events, onClose }: Props) {
   const styles = useStyles();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { cardRef, sharingEvent, share, notice, reset } = useShareEvent();
+
+  // Fresh state each time the sheet opens or closes.
+  useEffect(() => reset(), [dateKey, reset]);
 
   return (
     <Modal visible={!!dateKey} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.backdrop}>
+        {sharingEvent && (
+          <View style={styles.offscreen} pointerEvents="none">
+            <ShareCard ref={cardRef} event={sharingEvent} />
+          </View>
+        )}
         <Pressable testID="day-sheet-backdrop" style={styles.flex} onPress={onClose} />
         <View testID="day-sheet" style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
           <View style={styles.handle} />
@@ -70,10 +81,30 @@ export function DaySheet({ dateKey, events, onClose }: Props) {
                       {String(v)}
                     </Text>
                   ))}
+                  <Pressable
+                    testID={`event-share-button-${i}`}
+                    accessibilityLabel={`Share ${ev.title}`}
+                    disabled={!!sharingEvent}
+                    hitSlop={6}
+                    onPress={() => share(ev)}
+                    style={({ pressed }) => [styles.shareBtn, pressed && styles.pressed]}
+                  >
+                    {sharingEvent === ev ? (
+                      <ActivityIndicator size="small" color={colors.onBrandTertiary} />
+                    ) : (
+                      <Ionicons name="share-social-outline" size={16} color={colors.onBrandTertiary} />
+                    )}
+                    <Text style={styles.shareText}>Share</Text>
+                  </Pressable>
                 </View>
               </View>
             ))}
           </ScrollView>
+          {!!notice && (
+            <View testID="share-notice" style={styles.notice}>
+              <Text style={styles.noticeText}>{notice}</Text>
+            </View>
+          )}
         </View>
       </View>
     </Modal>
@@ -95,9 +126,9 @@ const useStyles = makeStyles((c) => ({
   title: { fontSize: 20, fontWeight: "700", color: c.onSurface },
   subtitle: { fontSize: 14, color: c.muted, marginTop: 4 },
   closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: c.surfaceTertiary,
     alignItems: "center",
     justifyContent: "center",
@@ -123,4 +154,20 @@ const useStyles = makeStyles((c) => ({
   badgeText: { fontSize: 11, fontWeight: "700", color: c.onBrandTertiary, letterSpacing: 0.5 },
   meta: { fontSize: 13, color: c.muted },
   metaKey: { fontWeight: "600", color: c.onSurfaceTertiary },
+  offscreen: { position: "absolute", left: -10000, top: 0 },
+  shareBtn: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    height: 44,
+    paddingHorizontal: 12,
+    marginTop: 8,
+    borderRadius: 22,
+    backgroundColor: c.brandTertiary,
+  },
+  pressed: { opacity: 0.7 },
+  shareText: { fontSize: 13, fontWeight: "700", color: c.onBrandTertiary },
+  notice: { marginHorizontal: 16, marginTop: 8, padding: 12, borderRadius: 12, backgroundColor: c.surfaceInverse },
+  noticeText: { fontSize: 13, color: c.onSurfaceInverse },
 }));
