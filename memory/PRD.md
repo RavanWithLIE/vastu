@@ -19,6 +19,8 @@ Calendar app: on open shows the current month; fetches extra details for that ye
 - Loading / error + Retry / summary states
 - Tested via testing agent with a local mock API (all pass; UI fixes applied)
 
+- Connected real API: https://p7y66xn5lh.execute-api.ap-south-1.amazonaws.com/prod/events?year={year}&month={month}
+- Times (UTC from API) shown in device local time with start + end; typeName badge; description shown
+
 ## Backlog
-- P1: Point EVENTS_API_URL_TEMPLATE to the real events API
 - P2: Type-based filters, add-to-device-calendar, offline cache of last month

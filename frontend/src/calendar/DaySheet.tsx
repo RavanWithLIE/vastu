@@ -47,9 +47,10 @@ export function DaySheet({ dateKey, events, onClose }: Props) {
           </View>
           <ScrollView contentContainerStyle={styles.list}>
             {events.map((ev, i) => (
-              <View key={i} testID={`event-row-${i}`} style={styles.row}>
+              <View key={ev.eventId ?? i} testID={`event-row-${i}`} style={styles.row}>
                 <View style={styles.timeCol}>
-                  <Text style={styles.time}>{formatTime(ev.startAt)}</Text>
+                  <Text testID={`event-start-${i}`} style={styles.time}>{formatTime(ev.startAt)}</Text>
+                  {!!ev.endAt && <Text style={styles.endTime}>{formatTime(ev.endAt)}</Text>}
                 </View>
                 <View style={styles.rowBody}>
                   <View style={styles.rowTop}>
@@ -58,10 +59,11 @@ export function DaySheet({ dateKey, events, onClose }: Props) {
                     </Text>
                     <View style={styles.badge}>
                       <Text testID={`event-type-${i}`} style={styles.badgeText}>
-                        {ev.type}
+                        {(ev.typeName ?? ev.type).toUpperCase()}
                       </Text>
                     </View>
                   </View>
+                  {!!ev.description && <Text style={styles.description}>{ev.description}</Text>}
                   {Object.entries(ev.metadata ?? {}).map(([k, v]) => (
                     <Text key={k} style={styles.meta}>
                       <Text style={styles.metaKey}>{humanize(k)}: </Text>
@@ -112,6 +114,8 @@ const useStyles = makeStyles((c) => ({
   },
   timeCol: { width: 72, borderRightWidth: 2, borderRightColor: c.brandPrimary, paddingRight: 8 },
   time: { fontSize: 14, fontWeight: "700", color: c.onSurface, fontVariant: ["tabular-nums"] },
+  endTime: { fontSize: 12, color: c.muted, marginTop: 2, fontVariant: ["tabular-nums"] },
+  description: { fontSize: 13, color: c.onSurfaceSecondary },
   rowBody: { flex: 1, gap: 4 },
   rowTop: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   eventTitle: { flex: 1, fontSize: 16, fontWeight: "600", color: c.onSurfaceSecondary },

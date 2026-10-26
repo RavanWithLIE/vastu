@@ -1,7 +1,12 @@
 export type CalendarEvent = {
+  eventId?: string;
   title: string;
   type: string;
+  typeName?: string;
+  description?: string | null;
   startAt: string;
+  endAt?: string | null;
+  status?: string;
   metadata?: Record<string, string | number | boolean | null>;
 };
 
@@ -26,12 +31,13 @@ export async function fetchMonthEvents(year: number, month: number): Promise<Mon
 export const pad = (n: number) => String(n).padStart(2, "0");
 export const dateKey = (y: number, m: number, d: number) => `${y}-${pad(m)}-${pad(d)}`;
 
-// Show the time exactly as given by the API (avoids device-timezone shifts).
-export function formatTime(startAt: string) {
-  const m = /T(\d{2}):(\d{2})/.exec(startAt);
-  if (!m) return "";
-  const h = Number(m[1]);
-  return `${h % 12 === 0 ? 12 : h % 12}:${m[2]} ${h < 12 ? "AM" : "PM"}`;
+// API times carry a zone (Z or +05:30); show them in the phone's local time.
+export function formatTime(iso?: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const h = d.getHours();
+  return `${h % 12 === 0 ? 12 : h % 12}:${pad(d.getMinutes())} ${h < 12 ? "AM" : "PM"}`;
 }
 
 export function humanize(key: string) {
